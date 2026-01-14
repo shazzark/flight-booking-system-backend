@@ -34,13 +34,13 @@ app.use(
     origin: [
       'http://localhost:3000',
       ' http://192.168.0.146:3000',
-      'https://skybookapp.vercel.app/',
+      'https://skybookapp.vercel.app',
     ],
     credentials: true,
-    // exposedHeaders: ['Set-Cookie'],
+    exposedHeaders: ['Set-Cookie'],
     // Add these options:
-    // allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   }),
 );
 
