@@ -135,12 +135,17 @@ exports.searchFlights = catchAsync(async (req, res, next) => {
     status: 'scheduled',
   }).sort('departureTime');
 
+  // res.status(200).json({
+  //   status: 'success',
+  //   results: flights.length,
+  //   data: {
+  //     flights,
+  //   },
+  // });
   res.status(200).json({
     status: 'success',
     results: flights.length,
-    data: {
-      flights,
-    },
+    data: { flights },
   });
 });
 
