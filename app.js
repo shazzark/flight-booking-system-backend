@@ -31,7 +31,11 @@ app.use(
 // ------------------- CORS -------------------
 app.use(
   cors({
-    origin: ['http://localhost:3000', ' http://192.168.0.146:3000'],
+    origin: [
+      'http://localhost:3000',
+      ' http://192.168.0.146:3000',
+      'https://skybookapp.vercel.app/',
+    ],
     credentials: true,
     // exposedHeaders: ['Set-Cookie'],
     // Add these options:
