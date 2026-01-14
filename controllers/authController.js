@@ -80,8 +80,8 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-    secure: true, // true in production, false in development
-    sameSite: 'none', // 'none' for production, 'lax' for dev
+    secure: false, // true in production, false in development
+    sameSite: 'lax', // 'none' for production, 'lax' for dev
     // domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
     // REMOVE THIS LINE: domain: 'real-estatemanagement-backend-api.onrender.com',
   };
