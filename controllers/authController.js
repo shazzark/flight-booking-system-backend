@@ -72,7 +72,7 @@ const signToken = (id) => {
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
-  const isProduction = process.env.NODE_ENV === 'production';
+  // const isProduction = process.env.NODE_ENV === 'production';
 
   // FIXED COOKIE SETTINGS:
   const cookieOptions = {
@@ -80,8 +80,9 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-    secure: isProduction, // true in production, false in development
-    sameSite: isProduction ? 'none' : 'lax', // 'none' for production, 'lax' for dev
+    secure: true, // true in production, false in development
+    sameSite: 'none', // 'none' for production, 'lax' for dev
+    domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
     // REMOVE THIS LINE: domain: 'real-estatemanagement-backend-api.onrender.com',
   };
 

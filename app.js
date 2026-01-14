@@ -14,9 +14,6 @@ const userRouter = require('./routes/userRoutes');
 const flightRouter = require('./routes/flightRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 const paymentRouter = require('./routes/paymentRoutes');
- 
- 
-
 
 const app = express();
 
@@ -36,10 +33,10 @@ app.use(
   cors({
     origin: ['http://localhost:3000'],
     credentials: true,
-    exposedHeaders: ['Set-Cookie'],
+    // exposedHeaders: ['Set-Cookie'],
     // Add these options:
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    // allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   }),
 );
 
@@ -80,8 +77,6 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // DATA SANITIZATION
 // app.use(xss());
 // app.use(mongoSanitize());
-
- 
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -142,7 +137,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/flights', flightRouter);
 app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/payments', paymentRouter);
- 
+
 // Test root route
 app.get('/', (req, res) => {
   res
@@ -154,7 +149,6 @@ app.get('/', (req, res) => {
 app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
-
 
 // GLOBAL ERROR HANDLER
 app.use(globalErrorHandler);
