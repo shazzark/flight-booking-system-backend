@@ -34,13 +34,13 @@ exports.getFlight = catchAsync(async (req, res, next) => {
     return next(new AppError('No flight found with that ID', 404));
   }
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-  //     flight,
-  //   },
-  // });
-  res.status(200).json(flight);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      flight,
+    },
+  });
+  // res.status(200).json(flight);
 });
 
 // POST create flight (Admin only)
@@ -66,13 +66,13 @@ exports.updateFlight = catchAsync(async (req, res, next) => {
     return next(new AppError('No flight found with that ID', 404));
   }
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-  //     flight,
-  //   },
-  // });
-  res.status(200).json(flight);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      flight,
+    },
+  });
+  // res.status(200).json(flight);
 });
 
 // DELETE flight (Admin only) - Only if no bookings exist
@@ -135,18 +135,18 @@ exports.searchFlights = catchAsync(async (req, res, next) => {
     status: 'scheduled',
   }).sort('departureTime');
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: flights.length,
-  //   data: {
-  //     flights,
-  //   },
-  // });
   res.status(200).json({
     status: 'success',
     results: flights.length,
-    data: { flights },
+    data: {
+      flights,
+    },
   });
+  // res.status(200).json({
+  //   status: 'success',
+  //   results: flights.length,
+  //   data: { flights },
+  // });
 });
 
 // Cancel flight (Admin only)
