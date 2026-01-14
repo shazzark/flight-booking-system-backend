@@ -127,7 +127,7 @@ const createSendToken = (user, statusCode, req, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-    secure: false, // Render is always HTTPS
+    secure: true, // Render is always HTTPS
     sameSite: 'none', // ← ADD THIS LINE! CRITICAL!
     // domain: 'flight-booking-system-backend-api.onrender.com',
   };
