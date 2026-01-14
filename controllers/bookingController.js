@@ -11,14 +11,14 @@ exports.getAllBookings = catchAsync(async (req, res, next) => {
     .populate('flight', 'airline flightNumber origin destination departureTime')
     .sort('-createdAt');
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: bookings.length,
-  //   data: {
-  //     bookings,
-  //   },
-  // });
-  res.status(200).json(bookings);
+  res.status(200).json({
+    status: 'success',
+    results: bookings.length,
+    data: {
+      bookings,
+    },
+  });
+  // res.status(200).json(bookings);
 });
 
 // GET user's bookings
@@ -58,13 +58,13 @@ exports.getBooking = catchAsync(async (req, res, next) => {
     );
   }
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-  //     booking,
-  //   },
-  // });
-  res.status(200).json(booking);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      booking,
+    },
+  });
+  // res.status(200).json(booking);
 });
 
 // POST create booking
