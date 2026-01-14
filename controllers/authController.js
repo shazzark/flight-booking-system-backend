@@ -74,16 +74,27 @@ const createSendToken = (user, statusCode, req, res) => {
 
   // const isProduction = process.env.NODE_ENV === 'production';
 
-  // FIXED COOKIE SETTINGS:
+  // // FIXED COOKIE SETTINGS:
+  // const cookieOptions = {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+  //   ),
+  //   httpOnly: true,
+  //   secure: false, // true in production, false in development
+  //   sameSite: 'lax', // 'none' for production, 'lax' for dev
+  //   // domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
+  //   // REMOVE THIS LINE: domain: 'real-estatemanagement-backend-api.onrender.com',
+  // };
+
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-    secure: false, // true in production, false in development
-    sameSite: 'lax', // 'none' for production, 'lax' for dev
-    // domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
-    // REMOVE THIS LINE: domain: 'real-estatemanagement-backend-api.onrender.com',
+    secure: isProduction, // only true in production
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for prod, 'lax' works for localhost
   };
 
   // Don't set domain at all - let the browser handle it
