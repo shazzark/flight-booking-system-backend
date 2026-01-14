@@ -82,7 +82,7 @@ const createSendToken = (user, statusCode, req, res) => {
     httpOnly: true,
     secure: true, // true in production, false in development
     sameSite: 'none', // 'none' for production, 'lax' for dev
-    domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
+    // domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
     // REMOVE THIS LINE: domain: 'real-estatemanagement-backend-api.onrender.com',
   };
 
