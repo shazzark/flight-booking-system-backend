@@ -16,14 +16,14 @@ exports.getAllFlights = catchAsync(async (req, res, next) => {
 
   const flights = await features.query;
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: flights.length,
-  //   data: {
-  //     flights,
-  //   },
-  // });
-  res.status(200).json(flights);
+  res.status(200).json({
+    status: 'success',
+    results: flights.length,
+    data: {
+      flights,
+    },
+  });
+  // res.status(200).json(flights);
 });
 
 // GET single flight
