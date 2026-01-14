@@ -33,10 +33,13 @@ const paymentSchema = new mongoose.Schema({
     enum: ['initiated', 'success', 'failed', 'refunded'],
     default: 'initiated',
   },
+
   transactionId: {
     type: String,
     unique: true,
+    sparse: true,
   },
+
   reference: {
     type: String,
     unique: true,

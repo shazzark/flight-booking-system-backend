@@ -149,14 +149,14 @@ exports.getAllPayments = catchAsync(async (req, res, next) => {
     .populate('booking')
     .sort('-initiatedAt');
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: payments.length,
-  //   data: {
-  //     payments,
-  //   },
-  // });
-  res.status(200).json(payments);
+  res.status(200).json({
+    status: 'success',
+    results: payments.length,
+    data: {
+      payments,
+    },
+  });
+  // res.status(200).json(payments);
 });
 
 // Get user's payments
@@ -195,13 +195,13 @@ exports.getPayment = catchAsync(async (req, res, next) => {
     );
   }
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-  //     payment,
-  //   },
-  // });
-  res.status(200).json(payment);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      payment,
+    },
+  });
+  // res.status(200).json(payment);
 });
 
 // Refund payment (Admin only)
