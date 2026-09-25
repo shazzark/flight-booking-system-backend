@@ -9,6 +9,7 @@ const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
+const corsOrigins = require('./corsOrigins');
 
 const userRouter = require('./routes/userRoutes');
 const flightRouter = require('./routes/flightRoutes');
@@ -31,11 +32,7 @@ app.use(
 // ------------------- CORS -------------------
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      ' http://192.168.0.146:3000',
-      'https://skybookapp.vercel.app',
-    ],
+    origin: corsOrigins,
     credentials: true,
     exposedHeaders: ['Set-Cookie'],
     // Add these options:
@@ -92,13 +89,10 @@ app.use((req, res, next) => {
 app.use(
   '/api/v1/img',
   express.static(path.join(__dirname, 'public/img'), {
-    setHeaders: (res, filePath) => {
+    setHeaders: (res) => {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       res.setHeader('Cache-Control', 'public, max-age=31536000');
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`📸 Serving image: ${filePath}`);
-      }
     },
   }),
 );
@@ -106,13 +100,10 @@ app.use(
 app.use(
   '/img',
   express.static(path.join(__dirname, 'public/img'), {
-    setHeaders: (res, filePath) => {
+    setHeaders: (res) => {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       res.setHeader('Cache-Control', 'public, max-age=31536000');
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`📸 Serving image: ${filePath}`);
-      }
     },
   }),
 );

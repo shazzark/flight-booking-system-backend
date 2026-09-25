@@ -7,84 +7,6 @@ const AppError = require('../utilis/appError');
 
 const paystack = Paystack(process.env.PAYSTACK_SECRET_KEY);
 
-// Initialize payment
-// exports.initializePayment = catchAsync(async (req, res, next) => {
-//   const { bookingId, email, amount, currency = 'NGN' } = req.body;
-
-//   // 1) Get booking
-//   const booking = await Booking.findById(bookingId);
-//   if (!booking) {
-//     return next(new AppError('Booking not found', 404));
-//   }
-
-//   // 2) Check if booking belongs to user
-//   if (booking.user.toString() !== req.user.id) {
-//     return next(
-//       new AppError('You are not authorized to pay for this booking', 403),
-//     );
-//   }
-
-//   // 3) Check booking status
-//   if (booking.status !== 'pending') {
-//     return next(new AppError(`Booking is already ${booking.status}`, 400));
-//   }
-
-//   // 4) Check if payment already exists
-//   const existingPayment = await Payment.findOne({ booking: bookingId });
-//   if (existingPayment && existingPayment.status === 'success') {
-//     return next(
-//       new AppError('Payment already completed for this booking', 400),
-//     );
-//   }
-
-//   // 5) Generate unique reference
-//   const reference =
-//     `FLT${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-
-//   // 6) Initialize PayStack payment
-//   const paystackResponse = await paystack.transaction.initialize({
-//     email: email || req.user.email,
-//     amount: amount * 100, // Convert to kobo
-//     currency: currency,
-//     reference: reference,
-//     callback_url: `${process.env.FRONTEND_URL}/booking/confirm/${bookingId}`,
-//     metadata: {
-//       bookingId: bookingId.toString(),
-//       userId: req.user.id.toString(),
-//       custom_fields: [
-//         {
-//           display_name: 'Booking Reference',
-//           variable_name: 'booking_reference',
-//           value: booking.bookingReference,
-//         },
-//       ],
-//     },
-//   });
-
-//   // 7) Create payment record
-//   const payment = await Payment.create({
-//     user: req.user.id,
-//     booking: bookingId,
-//     amount: amount,
-//     currency: currency,
-//     reference: reference,
-//     metadata: {
-//       bookingReference: booking.bookingReference,
-//       flightDetails: booking.flight.toString(),
-//     },
-//   });
-
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       authorization_url: paystackResponse.data.authorization_url,
-//       access_code: paystackResponse.data.access_code,
-//       reference: paystackResponse.data.reference,
-//       payment,
-//     },
-//   });
-// });
-
 // Verify payment callback
 exports.verifyPayment = catchAsync(async (req, res, next) => {
   const { reference } = req.query;
@@ -156,7 +78,6 @@ exports.getAllPayments = catchAsync(async (req, res, next) => {
       payments,
     },
   });
-  // res.status(200).json(payments);
 });
 
 // Get user's payments
@@ -165,13 +86,6 @@ exports.getMyPayments = catchAsync(async (req, res, next) => {
     .populate('booking')
     .sort('-initiatedAt');
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: payments.length,
-  //   data: {
-  //     payments,
-  //   },
-  // });
   res.status(200).json(payments); // <- payments is already an array
 });
 
@@ -201,7 +115,6 @@ exports.getPayment = catchAsync(async (req, res, next) => {
       payment,
     },
   });
-  // res.status(200).json(payment);
 });
 
 // Refund payment (Admin only)
@@ -323,7 +236,7 @@ exports.getPaymentStats = catchAsync(async (req, res, next) => {
 });
 
 exports.initializePayment = catchAsync(async (req, res, next) => {
-  const { bookingId, email, amount, currency = 'NGN' } = req.body;
+  const { bookingId } = req.body;
 
   // 1) Get booking
   const booking = await Booking.findById(bookingId);
@@ -345,10 +258,19 @@ exports.initializePayment = catchAsync(async (req, res, next) => {
 
   // 4) Check if payment already exists
   const existingPayment = await Payment.findOne({ booking: bookingId });
-  if (existingPayment && existingPayment.status === 'success') {
-    return next(
-      new AppError('Payment already completed for this booking', 400),
-    );
+  if (existingPayment) {
+    if (existingPayment.status !== 'initiated') {
+      return next(new AppError('Payment already processed for this booking', 400));
+    }
+    existingPayment.amount = booking.totalAmount;
+    existingPayment.currency = 'USD';
+    existingPayment.provider = 'demo';
+    existingPayment.paymentMethod = 'demo';
+    await existingPayment.save();
+    return res.status(200).json({
+      status: 'success',
+      data: { payment: existingPayment, reference: existingPayment.reference },
+    });
   }
 
   // 5) Generate unique reference
@@ -359,8 +281,10 @@ exports.initializePayment = catchAsync(async (req, res, next) => {
   const payment = await Payment.create({
     user: req.user.id,
     booking: bookingId,
-    amount: amount,
-    currency: currency,
+    amount: booking.totalAmount,
+    currency: 'USD',
+    provider: 'demo',
+    paymentMethod: 'demo',
     reference: reference,
     metadata: {
       bookingReference: booking.bookingReference,
@@ -368,23 +292,16 @@ exports.initializePayment = catchAsync(async (req, res, next) => {
     },
   });
 
-  // 7) Return dummy response
-  const dummyResponse = {
-    authorization_url: `${process.env.FRONTEND_URL}/booking/confirm/${bookingId}?reference=${reference}`,
-    access_code: 'dummy_access_code',
-    reference: reference,
-  };
-
   res.status(200).json({
     status: 'success',
     data: {
-      ...dummyResponse,
       payment,
+      reference,
     },
   });
 });
 
-// Add this verification endpoint for dummy payment
+// Complete a demo payment without contacting a payment provider.
 exports.verifyDummyPayment = catchAsync(async (req, res, next) => {
   const { reference, bookingId } = req.query;
 
@@ -392,23 +309,32 @@ exports.verifyDummyPayment = catchAsync(async (req, res, next) => {
     return next(new AppError('Reference and booking ID are required', 400));
   }
 
-  // Find payment
-  const payment = await Payment.findOne({ reference: reference })
-    .populate('booking')
-    .populate('user');
+  const payment = await Payment.findOne({
+    reference,
+    booking: bookingId,
+    user: req.user.id,
+  }).populate('booking');
 
   if (!payment) {
     return next(new AppError('Payment record not found', 404));
   }
 
-  // Simulate successful payment
-  payment.status = 'success';
-  payment.transactionId = `DUMMY_TXN_${Date.now()}`;
-  payment.completedAt = new Date();
-  await payment.save();
+  if (!payment.booking ||
+      !['pending', 'confirmed'].includes(payment.booking.status)) {
+    return next(new AppError('Booking is no longer payable', 400));
+  }
 
-  // Update booking
-  if (payment.booking) {
+  if (payment.status === 'initiated') {
+    payment.status = 'success';
+    payment.transactionId = `DEMO_${payment.reference}`;
+    payment.completedAt = new Date();
+    await payment.save();
+  } else if (payment.status !== 'success') {
+    return next(new AppError('Payment cannot be completed', 400));
+  }
+
+  // A repeated request leaves an already confirmed booking unchanged.
+  if (payment.booking.status === 'pending') {
     payment.booking.status = 'confirmed';
     payment.booking.paymentStatus = 'paid';
     await payment.booking.save();

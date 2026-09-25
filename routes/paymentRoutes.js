@@ -5,14 +5,11 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-// Update your payment routes to include dummy verification
-router.post('/dummy-verify', paymentController.verifyDummyPayment);
-// router.post('/webhook/paystack', paymentController.paystackWebhook);
-
 // All routes require authentication
 router.use(authController.protect);
 
 // USER ROUTES (static paths first)
+router.post('/dummy-verify', paymentController.verifyDummyPayment);
 router.post('/initiate', paymentController.initializePayment);
 router.get('/my-payments', paymentController.getMyPayments);
 router.get('/verify', paymentController.verifyPayment);

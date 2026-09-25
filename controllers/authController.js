@@ -12,112 +12,8 @@ const signToken = (id) => {
   });
 };
 
-// const createSendToken = (user, statusCode, req, res) => {
-//   const token = signToken(user._id);
-
-//   res.cookie('jwt', token, {
-//     expires: new Date(
-//       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-//     ),
-//     httpOnly: true,
-//     secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-//   });
-
-//   // Remove password from output
-//   user.password = undefined;
-
-//   res.status(statusCode).json({
-//     status: 'success',
-//     token,
-//     data: {
-//       user,
-//     },
-//   });
-// };
-// const createSendToken = (user, statusCode, req, res) => {
-//   const token = signToken(user._id);
-//   console.log('=== SETTING COOKIE ===');
-//   // console.log('Cookie options:', cookieOptions);
-//   console.log('Token (first 20 chars):', token.substring(0, 20));
-
-//   // const isProduction = process.env.NODE_ENV === 'production';
-
-//   // FIXED COOKIE SETTINGS:
-//   const cookieOptions = {
-//     expires: new Date(
-//       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-//     ),
-//     httpOnly: true,
-//     secure: true, // Render is always HTTPS
-//     sameSite: 'none', // ← ADD THIS LINE! CRITICAL!
-//     // domain: 'real-estatemanagement-backend-api.onrender.com',
-//   };
-
-//   console.log('🍪 Setting cookie with options:', cookieOptions); // 2. Now it's safe to USE it here
-//   console.log('🔑 Token (first 20 chars):', token.substring(0, 20));
-//   res.cookie('jwt', token, cookieOptions);
-
-//   // Remove password from output
-//   user.password = undefined;
-
-//   res.status(statusCode).json({
-//     status: 'success',
-//     token,
-//     data: {
-//       user,
-//     },
-//   });
-// };
-
-// const createSendToken = (user, statusCode, req, res) => {
-//   const token = signToken(user._id);
-
-//   // const isProduction = process.env.NODE_ENV === 'production';
-
-//   // // FIXED COOKIE SETTINGS:
-//   // const cookieOptions = {
-//   //   expires: new Date(
-//   //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-//   //   ),
-//   //   httpOnly: true,
-//   //   secure: false, // true in production, false in development
-//   //   sameSite: 'lax', // 'none' for production, 'lax' for dev
-//   //   // domain: 'https://flight-booking-system-backend-api.onrender.com/api/v1',
-//   //   // REMOVE THIS LINE: domain: 'real-estatemanagement-backend-api.onrender.com',
-//   // };
-
-//   const isProduction = process.env.NODE_ENV === 'production';
-
-//   const cookieOptions = {
-//     expires: new Date(
-//       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
-//     ),
-//     httpOnly: true,
-//     secure: isProduction, // only true in production
-//     sameSite: isProduction ? 'none' : 'lax', // 'none' for prod, 'lax' works for localhost
-//   };
-
-//   // Don't set domain at all - let the browser handle it
-//   // When you set domain, it restricts where the cookie can be sent from
-
-//   res.cookie('jwt', token, cookieOptions);
-
-//   // Remove password from output
-//   user.password = undefined;
-
-//   res.status(statusCode).json({
-//     status: 'success',
-//     token,
-//     data: {
-//       user,
-//     },
-//   });
-// };
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-  console.log('=== SETTING COOKIE ===');
-  // console.log('Cookie options:', cookieOptions);
-  console.log('Token (first 20 chars):', token.substring(0, 20));
 
   // const isProduction = process.env.NODE_ENV === 'production';
 
@@ -132,8 +28,6 @@ const createSendToken = (user, statusCode, req, res) => {
     // domain: 'flight-booking-system-backend-api.onrender.com',
   };
 
-  console.log('🍪 Setting cookie with options:', cookieOptions); // 2. Now it's safe to USE it here
-  console.log('🔑 Token (first 20 chars):', token.substring(0, 20));
   res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
@@ -197,14 +91,6 @@ exports.logout = (req, res) => {
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
-  console.log('=== PROTECT MIDDLEWARE ===');
-  console.log('Authorization header:', req.headers.authorization);
-  console.log('Cookies received:', req.cookies);
-  console.log('JWT cookie:', req.cookies.jwt);
-  console.log('URL:', req.originalUrl);
-  console.log('📄 Auth header:', req.headers.authorization || 'None');
-  console.log('🌐 Origin header:', req.headers.origin || 'None');
-  console.log('======================');
   // 1) Getting token and check of it's there
   let token;
   if (

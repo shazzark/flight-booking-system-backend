@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema({
   provider: {
     type: String,
     default: 'paystack',
-    enum: ['paystack'],
+    enum: ['paystack', 'demo'],
   },
   status: {
     type: String,
@@ -47,7 +47,7 @@ const paymentSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['card', 'bank_transfer', 'mobile_money'],
+    enum: ['card', 'bank_transfer', 'mobile_money', 'demo'],
     default: 'card',
   },
   metadata: {

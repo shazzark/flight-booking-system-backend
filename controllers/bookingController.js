@@ -18,7 +18,6 @@ exports.getAllBookings = catchAsync(async (req, res, next) => {
       bookings,
     },
   });
-  // res.status(200).json(bookings);
 });
 
 // GET user's bookings
@@ -30,11 +29,6 @@ exports.getMyBookings = catchAsync(async (req, res, next) => {
     )
     .sort('-createdAt');
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: bookings.length,
-  //   data: bookings,
-  // });
   res.status(200).json(bookings);
 });
 
@@ -64,7 +58,6 @@ exports.getBooking = catchAsync(async (req, res, next) => {
       booking,
     },
   });
-  // res.status(200).json(booking);
 });
 
 // POST create booking
@@ -81,7 +74,7 @@ exports.createBooking = catchAsync(async (req, res, next) => {
     return next(new AppError('Not enough seats available', 400));
   }
 
-  if (flight.status !== 'scheduled') {
+  if (flight.status !== Flight.STATUS.SCHEDULED) {
     return next(new AppError('Flight is not available for booking', 400));
   }
 
@@ -136,7 +129,6 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
 
   // Update booking status
   booking.status = 'cancelled';
-  booking.paymentStatus = 'refunded';
   await booking.save();
 
   res.status(200).json({

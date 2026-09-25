@@ -1,6 +1,15 @@
 // models/flightModel.js
 const mongoose = require('mongoose');
 
+const FLIGHT_STATUS = Object.freeze({
+  SCHEDULED: 'scheduled',
+  BOARDING: 'boarding',
+  DELAYED: 'delayed',
+  DEPARTED: 'departed',
+  ARRIVED: 'arrived',
+  CANCELLED: 'cancelled',
+});
+
 const flightSchema = new mongoose.Schema({
   airline: {
     type: String,
@@ -66,14 +75,17 @@ const flightSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['scheduled', 'cancelled', 'delayed', 'completed'],
-    default: 'scheduled',
+    // Keep completed valid for flights saved before the demo lifecycle update.
+    enum: [...Object.values(FLIGHT_STATUS), 'completed'],
+    default: FLIGHT_STATUS.SCHEDULED,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+flightSchema.set('timestamps', { createdAt: false, updatedAt: true });
 
 // Calculate duration before saving
 flightSchema.pre('save', function () {
@@ -86,4 +98,5 @@ flightSchema.pre('save', function () {
 });
 
 const Flight = mongoose.model('Flight', flightSchema);
+Flight.STATUS = FLIGHT_STATUS;
 module.exports = Flight;

@@ -4,9 +4,28 @@ const Booking = require('../models/bookingModel');
 const catchAsync = require('../utilis/catchAsync');
 const AppError = require('../utilis/appError');
 const APIFeatures = require('../utilis/apiFeatures');
+const { roomForFlight } = require('../flightRooms');
+
+const cancelActiveBookings = (flightId) =>
+  Booking.updateMany(
+    { flight: flightId, status: { $in: ['pending', 'confirmed'] } },
+    { status: 'cancelled' },
+  );
+
+const emitFlightUpdated = (req, flight) => {
+  const io = req.app.get('io');
+  const id = String(flight._id);
+  const room = roomForFlight(id);
+  if (!io || !room) return;
+
+  io.to(room).emit('flight.updated', {
+    id,
+    status: flight.status,
+    updatedAt: flight.updatedAt.toISOString(),
+  });
+};
 
 // GET all flights (with search/filter)
-// Updated flightController.js - JUST CHANGE THIS ONE FUNCTION
 exports.getAllFlights = catchAsync(async (req, res, next) => {
   const features = new APIFeatures(Flight.find(), req.query)
     .filter()
@@ -23,7 +42,6 @@ exports.getAllFlights = catchAsync(async (req, res, next) => {
       flights,
     },
   });
-  // res.status(200).json(flights);
 });
 
 // GET single flight
@@ -40,7 +58,6 @@ exports.getFlight = catchAsync(async (req, res, next) => {
       flight,
     },
   });
-  // res.status(200).json(flight);
 });
 
 // POST create flight (Admin only)
@@ -57,14 +74,35 @@ exports.createFlight = catchAsync(async (req, res, next) => {
 
 // PATCH update flight (Admin only)
 exports.updateFlight = catchAsync(async (req, res, next) => {
-  const flight = await Flight.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const flight = await Flight.findById(req.params.id);
 
   if (!flight) {
     return next(new AppError('No flight found with that ID', 404));
   }
+
+  const wasCancelled = flight.status === Flight.STATUS.CANCELLED;
+
+  const editableFields = [
+    'airline',
+    'flightNumber',
+    'origin',
+    'destination',
+    'departureTime',
+    'arrivalTime',
+    'basePrice',
+    'seatsAvailable',
+    'status',
+  ];
+  editableFields.forEach((field) => {
+    if (Object.hasOwn(req.body, field)) flight[field] = req.body[field];
+  });
+  await flight.save();
+
+  if (!wasCancelled && flight.status === Flight.STATUS.CANCELLED) {
+    await cancelActiveBookings(req.params.id);
+  }
+
+  emitFlightUpdated(req, flight);
 
   res.status(200).json({
     status: 'success',
@@ -72,7 +110,6 @@ exports.updateFlight = catchAsync(async (req, res, next) => {
       flight,
     },
   });
-  // res.status(200).json(flight);
 });
 
 // DELETE flight (Admin only) - Only if no bookings exist
@@ -132,7 +169,7 @@ exports.searchFlights = catchAsync(async (req, res, next) => {
       $lte: endDate,
     },
     seatsAvailable: { $gte: passengers },
-    status: 'scheduled',
+    status: Flight.STATUS.SCHEDULED,
   }).sort('departureTime');
 
   res.status(200).json({
@@ -142,33 +179,21 @@ exports.searchFlights = catchAsync(async (req, res, next) => {
       flights,
     },
   });
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: flights.length,
-  //   data: { flights },
-  // });
 });
 
 // Cancel flight (Admin only)
 exports.cancelFlight = catchAsync(async (req, res, next) => {
-  const flight = await Flight.findByIdAndUpdate(
-    req.params.id,
-    { status: 'cancelled' },
-    { new: true },
-  );
+  const flight = await Flight.findById(req.params.id);
 
   if (!flight) {
     return next(new AppError('No flight found with that ID', 404));
   }
 
-  // Update all bookings for this flight to cancelled
-  await Booking.updateMany(
-    { flight: req.params.id, status: { $in: ['pending', 'confirmed'] } },
-    {
-      status: 'cancelled',
-      paymentStatus: 'refunded',
-    },
-  );
+  flight.status = Flight.STATUS.CANCELLED;
+  await flight.save();
+  await cancelActiveBookings(req.params.id);
+
+  emitFlightUpdated(req, flight);
 
   res.status(200).json({
     status: 'success',
